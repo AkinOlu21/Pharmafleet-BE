@@ -1,6 +1,7 @@
 import expres from "express"
 import cors from "cors"
 import { connectDB } from "./config/db.js"
+import productRouter from "./routes/productRoute.js"
 
 
 
@@ -14,6 +15,9 @@ app.use(cors())
 
 // db connection
 connectDB()
+
+// api endpoints
+app.use("/api/product",productRouter)
 
 app.get("/",(req,res)=>{
     res.send("API working")
