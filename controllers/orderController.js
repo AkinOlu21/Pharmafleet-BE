@@ -41,7 +41,7 @@ const placeOrder = async (req,res) =>{
                 product_data:{
                     name:"Delivery charges"
                 },
-                unit_amount:2*100
+                unit_amount:2.5*100
             },
             quantity:1
         })
@@ -61,4 +61,23 @@ const placeOrder = async (req,res) =>{
     }
 }
 
-export {placeOrder}
+
+//temporary payment verification system instead of using webhooks
+const verifyOrder = async (req,res) =>{
+    const {orderId,success} = req.body;
+    try {
+        if (success=="true") {
+            await orderModel.findByIdAndUpdate(orderId,{payment:true});
+            res.json({success:true,message:"Payment complete"})
+        } else{
+            await orderModel.findByIdAndDelete(orderId);
+            res.json({success:false,message:"Payment incomplete"})
+        }
+        
+    } catch (error) {
+        console.log(error);
+        res.json({success:false,message:"error"})
+    }
+}
+
+export {placeOrder,verifyOrder}
