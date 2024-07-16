@@ -80,7 +80,7 @@ const verifyOrder = async (req,res) =>{
     }
 }
 
-// user orders for frontend
+// fetching the users orders for frontend
 const userOrders = async (req,res) => {
     try {
         const orders = await orderModel.find({userId:req.body.userId});
