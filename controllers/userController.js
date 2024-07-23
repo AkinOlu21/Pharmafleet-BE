@@ -24,7 +24,7 @@ const userLogin = async (req,res) =>{
 
         //if password does match
         const token = createToken(user._id);
-        res.json({success:true,token})
+        res.json({success:true,token, role:user.role});
     } catch (error) {
         console.log(error);
         res.json({success:false,message:"error"})
@@ -39,7 +39,7 @@ const createToken = (id) =>{
 
 //user registration
 const userRegistration = async (req,res) =>{
-    const {name,password,email} = req.body;
+    const {name,password,email,role} = req.body;
     try {
         // checking if user already exists
         const exists = await  userModel.findOne({email});
@@ -57,6 +57,11 @@ const userRegistration = async (req,res) =>{
             
         }
 
+        //validating different users roles
+        if (!['Customer', 'GP', 'Driver'].includes(role)) {
+            return res.json({success:false,message:"Please Pick a role"})
+        }
+
         //hashing and encrypting user password
         const salt = await bcrypt.genSalt(10)
         const  hasshedPassword = await bcrypt.hash(password,salt)
@@ -64,13 +69,14 @@ const userRegistration = async (req,res) =>{
         const newUser = new userModel({
             name:name,
             email:email,
-            password:hasshedPassword
+            password:hasshedPassword,
+            role:role
         })
 
         //saving new user in database
         const user = await newUser.save()
         const token = createToken(user._id)
-        res.json({success:true,token})
+        res.json({success:true,token,role:user.role})
     } catch (error) {
         console.log(error);
         res.json({success:false,message:"error"})
