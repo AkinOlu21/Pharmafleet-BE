@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import userModel from "../models/userModel";
+import userModel from "../models/userModel.js";
 
 const authorizeDoctorMiddleware = async (req,res,next) =>{
     const {token} = req.headers;

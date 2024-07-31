@@ -7,7 +7,7 @@ import userModel from "../models/userModel.js";
 const createPrescription = async (req,res) => {
 
     try {
-const {userId,  licenseNumber, medication, collectionType} = req.body;
+        const {userId,  licenseNumber, medication, collectionType} = req.body;
 
 
          // ensuring the inputs for creating a prescription is valid
@@ -55,17 +55,78 @@ const {userId,  licenseNumber, medication, collectionType} = req.body;
 // API for accepting prescription
     const acceptPrescription = async (req,res) => {
 
+        try {
+            const {prescriptionId} = req.params;
+            const {Note, Dosage} = req.body;
+            
+        if (!Note || !Dosage){
+            return res.json({success:false,message:"Please enter the required fields"})
+        }
+        
+
+        const acceptingPrescription = await prescriptionModel.findByIdAndUpdate(
+            prescriptionId,
+            {
+                status:"accepted",
+                Note:Note,
+                Dosage:Dosage
+            },
+            {
+                new: true
+            }
+        );
+
+        
+        if (!acceptingPrescription) {
+            return res.json({success:false,message:"Prescription not found"});
+        } else {
+            res.json({success:true,message:"Prescription accccepted successfully"});
+        }
+        } catch (error) {
+         console.log(error);
+         res.json({sucess:false,message:"Error occured while acceptiong prescription"})   
+        }
+        
+
+       
     }
 
 // API for rejecting prescription
     const rejectPrescription = async (req,res) => {
+        try {
+            
+            const {prescriptionId} = req.params;
+            const {Note} = req.body;
 
+            //Rejecting and Updating the status of the prescription along with a note for doctor to say why prescription was rejected
+            const rejectingPrescription = await prescriptionModel.findByIdAndUpdate(
+                prescriptionId,
+                {
+                    status:"rejected",
+                    Note:Note
+                },
+                {
+                    new: true
+                }
+            )
+
+
+            if (!Note){
+                return res.json({success:false,message:"Please enter the required fields"})
+            }       
+            
+            if(!rejectingPrescription){
+                return res.json({success:false,message:"Prescription not found"});
+            } else{
+                return res.json({success:true,message:"Prescription rejected successfully"})
+            }
+        } catch (error) {
+            console.log(error);
+            res.json({success:false,messsage:"Error occured while rejecting prescription"})
+            
+        }
     }
 
-// API for changing prescription status 
-const prescriptionStatus = async (req,res) =>{
-
-}
 
 
 // API for listing prescriptions
@@ -80,6 +141,24 @@ const prescriptionStatus = async (req,res) =>{
     }
 
 
-//I have solved it, now i have completed the create prescription API and will wanna move onto the accept and reject prescriptions APIs
+    //API for fetching user prescription for doctors
+    const userPrescriptions = async (req,res) =>{
+        try {
 
-export {createPrescription,acceptPrescription,rejectPrescription,prescriptionStatus,prescriptionList}
+            const userId = req.body.userId;
+
+            const prescriptions = await prescriptionModel.find({patientId:userId});
+
+            if (!prescriptions || prescriptions.length === 0) {
+                return res.json({ success: false, message: "No prescriptions found for this user" });
+            }
+            res.json({success:true,data:prescriptions})
+            
+        } catch (error) {
+            console.log(error);
+            res.json({success:false,message:"Error occured"})
+        }
+    }
+
+
+export {createPrescription,acceptPrescription,rejectPrescription,prescriptionList,userPrescriptions}
