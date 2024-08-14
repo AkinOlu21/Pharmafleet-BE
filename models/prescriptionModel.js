@@ -4,11 +4,12 @@ import mongoose from 'mongoose'
 const prescriptionSchema = new mongoose.Schema({
     patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
     doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
-    userchsosenPharmacyId:{type: mongoose.Schema.Types.ObjectId, ref: 'Pharmacy'},
+    patientChosenPharmacyId:{type: mongoose.Schema.Types.ObjectId, ref: 'Pharmacy'},
     medication: { type: String, required: true },
-    status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+    request: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+    status:{type:String, enum:['Sent to pharmacy', 'Ready for collection', 'Ready for delivery']},
     Note:{type:String},
-    Dosage:{type:String, required: true},
+    Dosage:{type:String, },
     collectionType: { type: String, enum: ['Collect', 'Delivery'], default: 'Delivery' }
   }, { timestamps: true });
 

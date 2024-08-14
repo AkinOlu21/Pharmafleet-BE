@@ -31,10 +31,10 @@ const addProduct =  async (req,res) => {
 const listProduct = async (req,res) => {
     try {
         const products = await productModel.find({});
-        res.json({succes:true,data:products})
+        res.json({success:true,data:products})
     } catch (error) {
         console.log(error);
-        res.json({succes:false,message:"Error"})
+        res.json({success:false,message:"Error"})
         
     }
 }

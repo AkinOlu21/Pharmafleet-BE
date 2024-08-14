@@ -64,7 +64,7 @@ const createToken = (id) =>{
 const pharmaLogin = async (req,res) =>{
     const {email,password,pharmaNumber} = req.body;
     try {
-        const pharmacy = await pharmacyModel.findOne({pharmaNumber,email});
+        const pharmacy = await pharmacyModel.findOne({email,pharmaNumber});
 
         //checking if pharmacy exists
         if (!pharmacy) {
@@ -74,21 +74,22 @@ const pharmaLogin = async (req,res) =>{
         //checking if pharmacies password match when logging in
         const isMatch = await bcrypt.compare(password,pharmacy.password)
         if (!isMatch) {
-            return res.json({success:false,message:"Inavalid password"})
+            return res.json({success:false,message:"Invalid password"})
         }
 
         //if password does match
         const token = createToken(pharmacy._id);
         res.json({success:true,token});
     } catch (error) {
-        
+        console.log(error);
+        res.json({success:false,message:"error occured logging in"})
     }
 }
 
 const pharmaprescriptions = async (req,res) => {
     try {
-        const pharmacyId = req.user.associatedPharmacy;
-        const prescriptions = await prescriptionModel.find({ pharmacyId, status: 'sent_to_pharmacy' })
+        const pharmacyId = req.user.assignedPharmacy;
+        const prescriptions = await prescriptionModel.find({ pharmacyId, status: 'Sent to pharmacy' })
           .populate('patientId', 'name')
           .populate('doctorId', 'name');
         res.json({ success: true, prescriptions });
@@ -97,6 +98,8 @@ const pharmaprescriptions = async (req,res) => {
         res.json({success:false,message:"error fetching prescriptions"})
     }
 }
+
+
 
 
 export {pharmacyRegistration,pharmaLogin,pharmaprescriptions}
