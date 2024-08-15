@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 // logic for placing the user order on the frontend
 const placeOrder = async (req,res) =>{
 
-    const frontend_url = "http://localhost:5174"
+    const frontend_url = "http://localhost:5173"
 
     try { //creating a new order
         const newOrder = new orderModel({
@@ -17,6 +17,7 @@ const placeOrder = async (req,res) =>{
             items:req.body.items,
             amount:req.body.amount,
             address:req.body.address,
+            coordinates:req.body.coordinates
 
         })
         await newOrder.save(); //saving the new order in the database
@@ -116,4 +117,19 @@ const updateOrderStatus = async (req,res) =>{
     }
 }
 
-export {placeOrder,verifyOrder,userOrders,listOrders,updateOrderStatus}
+//API for driver to fetch orders
+    const driverOrders = async (req,res) => {
+        try {
+            //fetching orders that are paid for and are in order processing status
+            const orders = await orderModel.find({
+                payment:true,
+                status:"Ready for delivery"}).sort({date:1});
+
+            res.json({success:true,data:orders})
+        } catch (error) {
+            console.log(error);
+            res.json({success:false,message:"Error fetching driver orders"})
+        }
+    }
+
+export {placeOrder,verifyOrder,userOrders,listOrders,updateOrderStatus,driverOrders}

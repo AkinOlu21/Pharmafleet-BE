@@ -8,6 +8,7 @@ import cartRouter from "./routes/cartRoute.js"
 import orderRouter from "./routes/orderRoute.js"
 import prescriptionRouter from "./routes/prescriptionRoute.js"
 import pharmacyRouter from "./routes/pharmacyRoute.js"
+import driverRouter from "./routes/driverRoute.js"
 
 
 
@@ -30,6 +31,7 @@ app.use("/api/cart",cartRouter)
 app.use("/api/order",orderRouter)
 app.use("/api/prescription",prescriptionRouter)
 app.use("/api/pharmacy",pharmacyRouter)
+app.use("/api/driver",driverRouter)
 
 app.get("/",(req,res)=>{
     res.send("API working")

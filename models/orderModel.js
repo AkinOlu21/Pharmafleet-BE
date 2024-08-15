@@ -5,6 +5,11 @@ const orderSchema = new mongoose.Schema({
     items:{type:Array,required:true},
     amount:{type:Number,required:true},
     address:{type:Object,required:true},
+    coordinates:{ 
+        latitude:{type:Number},
+        
+        longitude:{type:Number}
+    },
     status:{type:String,default:"Order processing"},
     date:{type:Date,default:Date.now()},
     payment:{type:Boolean,default:false}
