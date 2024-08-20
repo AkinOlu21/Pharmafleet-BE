@@ -48,10 +48,28 @@ const createPrescription = async (req,res) => {
 
         });
 
-        // adding the prescription to the user prescription array
+        /*/ adding the prescription to the user prescription array
         const prescriptions = await newPrescription.save();
         await userModel.findByIdAndUpdate(userId,{prescriptions});
             res.json({success:true,message:"Prescription successfully created "} );
+        
+     //adding the prescription to the doctor prescription array
+        const doctorPrescriptions = await newPrescription.save();
+        await userModel.findByIdAndUpdate(doctor._id,{doctorPrescriptions});*/
+
+        const savedPrescription = await newPrescription.save();
+
+        // Add the prescription to the doctor's prescriptions array
+        await userModel.findByIdAndUpdate(doctor._id, {
+          $push: { prescriptions: savedPrescription._id }
+        });
+    
+        // Also add the prescription to the patient's prescriptions array
+        await userModel.findByIdAndUpdate(user._id, {
+          $push: { prescriptions: savedPrescription._id }
+        });
+    
+        res.status(201).json({ success: true, message: 'Prescription created successfully', prescription: savedPrescription });
    
     } catch (error) {
         console.log(error);
@@ -60,17 +78,34 @@ const createPrescription = async (req,res) => {
 }
 
  
- //verify prescription order
- const verifyPrescriptionOrder = async (req,res) =>{
-    const {prescriptionId,success} = req.body;
+ 
+
+
+
+
+ const getGPPrescriptions = async (req,res) => {
+    
     try {
-        if (success=="true") {
-            await prescriptionModel.findByIdAndUpdate(prescriptionId,{payment:true});
+        const gpId = req.user._id;
+    
+        // Fetch the GP's document and populate the prescriptions
+        const gp = await userModel.findById(gpId)
+          .populate({
+            path: 'prescriptions',
+            populate: { path: 'patientId', select: 'name email' }
+          });
+    
+        if (!gp || gp.role !== 'GP') {
+          return res.status(403).json({ success: false, message: 'Not authorized as a GP' });
         }
-    } catch (error) {
-        
-    }
- }
+    
+        res.json({ success: true, data: gp.prescriptions });
+      } catch (error) {
+        console.error('Error fetching GP prescriptions:', error);
+        res.status(500).json({ success: false, message: 'Error fetching prescriptions' });
+      }
+    };
+ 
 
 // API for accepting prescription
     const acceptPrescription = async (req,res) => {
@@ -257,4 +292,4 @@ const createPrescription = async (req,res) => {
         }
     }
 
-export {createPrescription,acceptPrescription,rejectPrescription,prescriptionList,userPrescriptions}
+export {createPrescription,acceptPrescription,rejectPrescription,prescriptionList,userPrescriptions,getGPPrescriptions}
