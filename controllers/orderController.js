@@ -1,4 +1,5 @@
 import orderModel from "../models/orderModel.js";
+import prescriptionModel from "../models/prescriptionModel.js";
 import userModel from "../models/userModel.js"
 import Stripe from "stripe"
 
@@ -81,6 +82,8 @@ const verifyOrder = async (req,res) =>{
     }
 }
 
+ 
+
 // fetching the users orders for frontend
 const userOrders = async (req,res) => {
     try {
@@ -106,6 +109,8 @@ const listOrders = async (req,res) =>{
 }
 
 
+
+
 // API for admin to upadte order status
 const updateOrderStatus = async (req,res) =>{
     try {
@@ -125,6 +130,7 @@ const updateOrderStatus = async (req,res) =>{
                 payment:true,
                 status:"Ready for delivery"}).sort({date:1});
 
+
             res.json({success:true,data:orders})
         } catch (error) {
             console.log(error);
@@ -132,4 +138,38 @@ const updateOrderStatus = async (req,res) =>{
         }
     }
 
-export {placeOrder,verifyOrder,userOrders,listOrders,updateOrderStatus,driverOrders}
+    //API for driver to fetch prescription orders
+    const driverPrescriptionOrders = async (req,res) => {
+        try {
+            const prescriptionOrder = await prescriptionModel.find({
+                status: "Ready for delivery",
+                collectionType: "Delivery"
+            }).sort({date:1});
+
+            res.json({success:true,data:prescriptionOrder})
+        } catch (error) {
+            console.log(error);
+            res.json({success:false,message:"Error fetching prescription orders"})
+        }
+    }
+
+    //API to update prescription order status
+    const updatePrescriptionOrderStatus = async (req,res) =>{
+        try {
+            await prescriptionModel.findByIdAndUpdate(req.body.prescriptionId,{status:req.body.status});
+            res.json({success:true,message:"Status Updated"})
+    
+    
+        }   catch (error) {
+            console.log(error);
+            res.json({success:false,message:"Error updating status"})
+        }
+    }
+
+    //API for driver to update order status
+
+
+
+    
+
+export {placeOrder,verifyOrder,userOrders,listOrders,updateOrderStatus,driverOrders,driverPrescriptionOrders,updatePrescriptionOrderStatus}

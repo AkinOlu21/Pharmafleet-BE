@@ -1,19 +1,18 @@
 import pharmacyModel from "../models/pharmacyModel.js";
 import prescriptionModel from "../models/prescriptionModel.js";
 import userModel from "../models/userModel.js";
-import {notifyPharmacy} from "../services/notificationService.js";
 
 
 
 // API for user to create prescription
 const createPrescription = async (req,res) => {
- const {userId,  licenseNumber, medication, patientChosenPharmacyId, collectionType} = req.body
+ const { firstName, lastName, licenseNumber, medication, collectionType, Note, address, coordinates} = req.body
     try {
-        ;
+        
 
 
          // ensuring the inputs for creating a prescription is valid
-         if (!userId || !licenseNumber || !medication || !collectionType || !patientChosenPharmacyId)
+         if (!firstName || !lastName|| !licenseNumber || !medication || !collectionType || !address || !coordinates)
          {
              return res.json({success:false,message:"Please enter the required fields"});
          }
@@ -25,25 +24,26 @@ const createPrescription = async (req,res) => {
         }
 
         //checking if user exists
+        const userId = req.body.userId;
+
         const user = await userModel.findById(userId);
         if (!user){
             return res.json({success:false,message:"User not found"
             })
         } 
 
-        //checking if the chosen pharmacy exists
-        const pharmacy = await pharmacyModel.findById(patientChosenPharmacyId);
-        if (!pharmacy) {
-            return res.json({success:false,message:"The chosen phamacy was not found"})
-        }
-       
+        
       
  // required input fields
         const newPrescription = new prescriptionModel ({
+            firstName:firstName,
+            lastName:lastName,
             patientId:user._id,
             doctorId: doctor._id,
             medication:medication,
-            patientChosenPharmacyId:patientChosenPharmacyId,
+            address:address,
+            coordinates:coordinates,
+            Note:Note,
             collectionType:collectionType || 'Delivery'
 
         });
@@ -51,10 +51,7 @@ const createPrescription = async (req,res) => {
         // adding the prescription to the user prescription array
         const prescriptions = await newPrescription.save();
         await userModel.findByIdAndUpdate(userId,{prescriptions});
-            res.json({success:true,message:"Prescription successfully created "})
-
-            
-
+            res.json({success:true,message:"Prescription successfully created "} );
    
     } catch (error) {
         console.log(error);
@@ -62,6 +59,18 @@ const createPrescription = async (req,res) => {
     }
 }
 
+ 
+ //verify prescription order
+ const verifyPrescriptionOrder = async (req,res) =>{
+    const {prescriptionId,success} = req.body;
+    try {
+        if (success=="true") {
+            await prescriptionModel.findByIdAndUpdate(prescriptionId,{payment:true});
+        }
+    } catch (error) {
+        
+    }
+ }
 
 // API for accepting prescription
     const acceptPrescription = async (req,res) => {
@@ -94,7 +103,7 @@ const createPrescription = async (req,res) => {
             return res.json({success:false,message:"Prescription not found"});
 
             // Send prescription to the selected pharmacy
-        const sendResult = await sendPrescriptionToPharmacy(acceptingPrescription);
+        const sendResult = await sendingPrescriptionToPharmacy(acceptingPrescription);
         
         if (sendResult.success) {
             res.json({ 
@@ -168,7 +177,10 @@ const createPrescription = async (req,res) => {
         res.json({success:false,message:"Prescription list not available"})
     }
     }
+   
 
+
+    
 
     //API for fetching user prescription for doctors
     const userPrescriptions = async (req,res) =>{
