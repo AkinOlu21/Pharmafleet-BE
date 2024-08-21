@@ -4,7 +4,7 @@ import userModel from "../models/userModel.js";
 const authorizeDoctorMiddleware = async (req,res,next) =>{  
     const {token} = req.headers;
     if (!token) {
-        return res.json({succes:false,message:"NOT AUTHORIZED PLEASE lOGIN"});
+        return res.json({success:false,message:"NOT AUTHORIZED PLEASE lOGIN"});
     }
 
     try {

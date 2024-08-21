@@ -109,58 +109,40 @@ const createPrescription = async (req,res) => {
 
 // API for accepting prescription
     const acceptPrescription = async (req,res) => {
-
         try {
             const {prescriptionId} = req.params;
             const {Note, Dosage} = req.body;
-            
-        if (!Note || !Dosage){
-            return res.json({success:false,message:"Please enter the required fields"})
-        }
-        
 
-        const acceptingPrescription = await prescriptionModel.findByIdAndUpdate(
-            prescriptionId,
-            {
-                request:"accepted",
-                status:"Sent to pharmacy",
-                Note:Note,
-                Dosage:Dosage
-            },
-            {
-                new: true
+            if (!Note || !Dosage){
+                return res.json({success:false,message:"Please enter the required fields (Note and Dosage)"})
             }
-        );
-            
-       const prescriptions =  await acceptingPrescription.save();
-        
-        if (!acceptingPrescription) {
-            return res.json({success:false,message:"Prescription not found"});
 
-            // Send prescription to the selected pharmacy
-        const sendResult = await sendingPrescriptionToPharmacy(acceptingPrescription);
-        
-        if (sendResult.success) {
-            res.json({ 
-                success: true, 
-                message: `Prescription accepted and sent to ${sendResult.pharmacyName} successfully` 
-            });
-        } else {
-            res.json({ success: false, message: sendResult.message });
-        }
+            const acceptedPrescription = await prescriptionModel.findByIdAndUpdate(
+                prescriptionId,
+                {
+                    request:"accepted",
+                    status:"Sent to pharmacy",
+                    Note,
+                    Dosage
+                },
+                {
+                    new: true,
+                    runValidators: true
+                }
+            );
 
-          
-        } else {
-            res.json({success:true,message:"Prescription accccepted successfully"});
-        }
+            if(!acceptedPrescription){
+                return res.json({success:false,message:"Prescription not found"});
+            } else{
+                return res.json({success:true,message:"Prescription accepted successfully", prescription:acceptedPrescription})
+            }
+
         } catch (error) {
-         console.log(error);
-         res.json({sucess:false,message:"Error occured while accepting prescription"}); 
+            console.log(error);
+            console.error("Error occured while accepting prescription")
         }
-        
-
        
-    }
+    };
 
 // API for rejecting prescription
     const rejectPrescription = async (req,res) => {
@@ -178,25 +160,37 @@ const createPrescription = async (req,res) => {
             const rejectingPrescription = await prescriptionModel.findByIdAndUpdate(
                 prescriptionId,
                 {
-                    status:"rejected",
+                    request:"rejected",
                     Note:Note
                 },
                 {
-                    new: true
+                    new: true,
+                    runValidators: true
                 }
-            )
+            );
 
  
             
             if(!rejectingPrescription){
                 return res.json({success:false,message:"Prescription not found"});
             } else{
-                return res.json({success:true,message:"Prescription rejected successfully"})
+                return res.json({success:true,message:"Prescription rejected successfully", prescription:rejectingPrescription})
             }
         } catch (error) {
             console.log(error);
+            console.error("Error occured while rejecting prescription")
             res.json({success:false,messsage:"Error occured while rejecting prescription"})
             
+        }
+    }
+
+    const deletePrescription = async (req,res) => {
+        try{
+            const deletePrescription = await prescriptionModel.findByIdAndDelete(req.body.id);
+            res.json({success:true,message:"Prescription successfully deleted", data:deletePrescription})
+        } catch (error) {
+            console.log(error);
+            res.json({success:false,message:"Error deleting prescription"})
         }
     }
 
@@ -205,7 +199,9 @@ const createPrescription = async (req,res) => {
 // API for listing prescriptions
     const prescriptionList = async (req,res) =>{
     try {
-        const prescriptions = await prescriptionModel.find({});
+        const prescriptions = await prescriptionModel.find({
+            status: { $in: ['Order processing', 'Sent to pharmacy', 'Ready for collection', 'Ready for delivery', 'Out for Delivery', 'Order Collected'] }
+        });
         res.json({success:true,data:prescriptions})
     } catch (error) {
         console.log(error);
@@ -292,4 +288,4 @@ const createPrescription = async (req,res) => {
         }
     }
 
-export {createPrescription,acceptPrescription,rejectPrescription,prescriptionList,userPrescriptions,getGPPrescriptions}
+export {createPrescription,acceptPrescription,rejectPrescription,prescriptionList,userPrescriptions,getGPPrescriptions,deletePrescription}
