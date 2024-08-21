@@ -8,7 +8,7 @@ const prescriptionRouter = express.Router();
 
 prescriptionRouter.get('/prescriptionlist',prescriptionList);
 prescriptionRouter.post('/create',authMiddleware,createPrescription)
-prescriptionRouter.post('/userprescriptions',authMiddleware,userPrescriptions)
+prescriptionRouter.get('/userprescriptions',authMiddleware,userPrescriptions)
 prescriptionRouter.post('delete',deletePrescription)
 prescriptionRouter.get('/GPprescriptions',authorizeDoctorMiddleware,getGPPrescriptions);
 prescriptionRouter.patch('/:prescriptionId/accept',acceptPrescription);

@@ -1,3 +1,4 @@
+import orderModel from "../models/orderModel.js";
 import pharmacyModel from "../models/pharmacyModel.js";
 import prescriptionModel from "../models/prescriptionModel.js";
 import userModel from "../models/userModel.js";
@@ -216,19 +217,16 @@ const createPrescription = async (req,res) => {
     //API for fetching user prescription for doctors
     const userPrescriptions = async (req,res) =>{
         try {
-
-            const userId = req.body.userId;
-
-            const prescriptions = await prescriptionModel.find({patientId:userId});
-
-            if (!prescriptions || prescriptions.length === 0) {
-                return res.json({ success: false, message: "No prescriptions found for this user" });
-            }
-            res.json({success:true,data:prescriptions})
-            
+            // Assuming req.user contains the authenticated user's ID
+            const userId = req.user.id;
+    
+            // Find prescriptions where the patientId matches the logged-in user's ID
+            const prescriptions = await prescriptionModel.find({ patientId: userId });
+    
+            res.json({ success: true, data: prescriptions });
         } catch (error) {
-            console.log(error);
-            res.json({success:false,message:"Error occured"})
+            console.error(error);
+            res.json({ success: false, message: "Error occurred", error});
         }
     }
 
