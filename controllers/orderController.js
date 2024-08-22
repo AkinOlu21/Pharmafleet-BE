@@ -12,9 +12,10 @@ const placeOrder = async (req,res) =>{
 
     const frontend_url = "http://localhost:5173"
 
+    const userId = req.user.id;
     try { //creating a new order
         const newOrder = new orderModel({
-            userId:req.body.userId,
+            userId:userId,
             items:req.body.items,
             amount:req.body.amount,
             address:req.body.address,
@@ -22,7 +23,7 @@ const placeOrder = async (req,res) =>{
 
         })
         await newOrder.save(); //saving the new order in the database
-        await userModel.findByIdAndUpdate(req.body.userId,{cartData:{}}); //cleaning the users cart data after saving the new order
+        await userModel.findByIdAndUpdate(userId,{cartData:{}}); //cleaning the users cart data after saving the new order
 
         //taking the items in the new order and using them for the stripe payment in line_items
         const line_items = req.body.items.map((item)=>({
@@ -87,7 +88,8 @@ const verifyOrder = async (req,res) =>{
 // fetching the users orders for frontend
 const userOrders = async (req,res) => {
     try {
-        const orders = await orderModel.find({userId:req.body.userId});
+        const userId = req.user.id;
+        const orders = await orderModel.find({userId});
         res.json({success:true,data:orders})
     } catch (error) {
         console.log(error);

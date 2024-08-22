@@ -25,7 +25,7 @@ const createPrescription = async (req,res) => {
         }
 
         //checking if user exists
-        const userId = req.body.userId;
+        const userId = req.user.id;
 
         const user = await userModel.findById(userId);
         if (!user){
@@ -231,7 +231,23 @@ const createPrescription = async (req,res) => {
     }
 
 
-    const sendingPrescriptionToPharmacy = async (req,res) =>{
+    const updatePrescriptionOrder = async (req,res) =>{
+        try{
+            const {prescriptionId, status} = req.body;
+            const prescription = await prescriptionModel.findByIdAndUpdate(prescriptionId,{status}, {new:true});
+
+            if (!prescription){
+                return res.json({success:false,message:"Prescription not found"});
+            } 
+            res.json({success:true,message:"Prescription status updated", prescription})
+        } catch (error) {
+            console.log(error);
+            res.json({success:false,message:"Error updating prescription status"});
+        }
+    }
+
+
+    /*const sendingPrescriptionToPharmacy = async (req,res) =>{
         try {
             // Fetch the pharmacy details from your database
             const Pharmacy = mongoose.model('Pharmacy'); // Assume you have a Pharmacy model
@@ -284,6 +300,6 @@ const createPrescription = async (req,res) => {
                 message: `Error occurred while sending prescription to pharmacy: ${error.message}` 
             };
         }
-    }
+    }*/
 
-export {createPrescription,acceptPrescription,rejectPrescription,prescriptionList,userPrescriptions,getGPPrescriptions,deletePrescription}
+export {createPrescription,acceptPrescription,rejectPrescription,prescriptionList,userPrescriptions,getGPPrescriptions,deletePrescription,updatePrescriptionOrder}
