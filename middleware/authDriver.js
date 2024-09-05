@@ -14,13 +14,13 @@ const authorizeDriverMiddleware = async (req,res,next) =>{
         //verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        //Finding the GP with the associated token in the database
+        //Finding the Driver with the associated token in the database
         const user = await userModel.findById(decoded.id);
         if(!user){
             return res.json({success:false,message:"User was not found"});
         }
 
-        //Checking if the user is the GP
+        //Checking if the user is the Driver
         if (user.role !=="Driver") {
             return res.json({success:false,message:"Access denied. Only Drivers can perform this action"});
         
